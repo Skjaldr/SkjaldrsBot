@@ -7,5 +7,32 @@ edition = "2021"
 
 [dependencies]
 serde = {version = "1.0.137", features = ["derive"]}
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 rfd = "0.8.3"
 toml = "0.5.9"
+
+
+[dependencies.windows-sys]
+version = "0.36.1"
+features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+]
+
+[dependencies.serenity]
+default-features = false
+features = [
+    "client",
+    "builder",
+    "cache",
+    "framework",
+    "standard_framework",
+    "gateway",
+    "model",
+    "utils",
+    "unstable_discord_api",
+    "rustls_backend",
+]
+version = "0.11"
