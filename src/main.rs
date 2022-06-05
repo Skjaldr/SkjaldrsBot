@@ -38,24 +38,19 @@ impl Config {
     }
     // serialize the config struct
     fn serialize(&self) -> String {
-       let test = toml::to_string(self).unwrap();
-       println!();
-       println!("1: {}", &test);
-       test
+       toml::to_string(self).unwrap()
     }
+
+       
     // deserialize the config struct
     fn deser(&self) {
         let test: Config = match toml::from_str(CONFIG_FILE_NAME) {
             Ok(()) => toml::from_str(CONFIG_FILE_NAME).unwrap(),
             Err(e) => {
-
-                println!("Failed to find config file.  New config generation needed");
-                self.create_new_config();
                 let mut conf = Config { 
-                token: String::from("Need to init"), 
-                path: Path::new(CONFIG_FILE_NAME).to_path_buf() 
+                    token: String::from("Need to init"), 
+                    path: Path::new(CONFIG_FILE_NAME).to_path_buf() 
                 };
-                conf.get_fields();
                 conf
             }
         };
@@ -66,14 +61,16 @@ impl Config {
     fn does_exist(&self) -> bool {
         match fs::read_to_string(CONFIG_FILE_NAME) {
             Ok(_) => {
-                fs::read_to_string(CONFIG_FILE_NAME).unwrap();
                 return true
-            }
+            } 
             Err(e) => {
-                println!("{e} \".config.toml\".  The config does not exist or has been deleted.");
-                return false 
+                return false
             }
         };
+    }
+
+    fn write_config(&self) {
+        fs::write(CONFIG_FILE_NAME, self.serialize());
     }
 
 }
@@ -82,42 +79,24 @@ impl Config {
 fn main() {
 
     let mut config: Config = Config { token: String::new(), path: PathBuf::new() };
-    config.get_fields();
-    // config.serialize();
-    // config.deser();
-    //config.create_new_config();
-    // let path = Path::new(CONFIG_FILE_NAME);
-    // let file = match fs::read_to_string(CONFIG_FILE_NAME) {
-    //     Ok(_) => fs::read_to_string(CONFIG_FILE_NAME).unwrap(),
-    //     Err(e) => {
-    //         println!("{e}  Creating new config file.");
-    //         return config.create_new_config() 
-    //     }
-    // };
 
-        // if config.does_exist() {
-        //     //println!("File is empty");
-        //     println!("File exists");
-        // } else {
-        //     //println!("File is not empty!");
-        //     println!("File does not exist!");
-        // }
 
-        while config.does_exist() == false {
-            if false {
-                    //println!("File is empty");
-                    println!("File exists");
-                } else {
-                    //println!("File is not empty!");
-                    config.create_new_config();
-                    println!("Generating new .config.toml");
-                }
+        //let mut check = false;
+        if config.does_exist() {
+            //returns true
+            println!("is true");
+            println!("I will now start the program linked to my dick, I mean Shadowbane file you chose.")
+
+        } else {
+            // returns false, creates a new config file, serializes the content of the Config struct
+            // and writes the contents of the struct to the config
+            config.get_fields();
+            config.create_new_config();
+            config.serialize();
+            config.write_config();
+            println!("Config should now exist and have content!");
+
         }
-    
-
-
-    //println!("{}", &config.token);
-    //println!("{}", &config.path.to_string_lossy());
 
 
 
