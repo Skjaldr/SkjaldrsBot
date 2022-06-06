@@ -1,12 +1,13 @@
 use crate::discord;
+use std::{io::ErrorKind, path::Path};
+use std::process::Child;
 use rfd::FileDialog;
-use std::{env, path::PathBuf, fs, io, process::Command};
+use std::{env, path::PathBuf, fs, io, process::Command, borrow::Borrow};
 use serde::{Serialize, Deserialize};
 
 // declare and define constants related to this file
 const CONFIG_FILE_NAME: &str = ".config.toml";
 const _ENV_FILE_PATH: &str = ".env";
-// const SB_FILE_PATH:  =  FileDialog::new();
 
 // simple function to prompt the user for input or instructions.
 fn prompt_user(text: &str) {
@@ -20,16 +21,10 @@ impl Env {
     fn set_env_token(&self) {
         env::set_var("DISCORD_TOKEN", &self.token);
     }
-
-    fn get_token(&mut self, token_from_config: Config) -> &String {
-        self.token = token_from_config.token;
-        &self.token
-    }
-
 }
 
 fn introduction() {
-    prompt_user("Welcome to Skjaldrs Bot!\n\n\n
+    prompt_user("Welcome to Skjaldrs Bot!\n\n
     
     The first time you run this program, you will be asked to put in your discord token you recieved\n\
     from the Discord Developer Portal upon making your bot.  When prompted, please enter your key so\n\
@@ -117,7 +112,7 @@ impl Config {
     }
 
     // serialize the config struct
-    fn serialize(&self) -> String {
+    fn serial(&self) -> String {
        toml::to_string(self).unwrap()
     }
 
@@ -147,15 +142,29 @@ impl Config {
 
     //writes all of the serialized config contents into the .config.toml file
     fn write_config(&self) {
-        match fs::write(CONFIG_FILE_NAME, self.serialize()) {
-            Ok(_) => fs::write(CONFIG_FILE_NAME, self.serialize()).unwrap(),
+        match fs::write(CONFIG_FILE_NAME, self.serial()) {
+            Ok(_) => fs::write(CONFIG_FILE_NAME, self.serial()).unwrap(),
             Err(e) => println!("Error writing to file {}, {}", CONFIG_FILE_NAME, e),
         }
     }
 
     // Takes in the path to the sb.exe executable and runs the program
-    fn run_sb(&self, path: &PathBuf) {
-        Command::new(path).spawn().unwrap();
+    fn run_sb(&mut self, path: &PathBuf) {
+        //Command::new(&path).spawn().unwrap();
+        if let Err(e) = Command::new(&path).arg("?").spawn() {
+            println!("{:?}",e);
+            println!("File path has been lost or deleted, please navigate to and select sb.exe (or shortcut)");
+            self.repair_path_err();
+        } 
+    }
+
+    // if the file path becomes corrupted, prompt the user and get a new path, serialize, and write it to the config
+    fn repair_path_err(&mut self) {
+        self.token = self.deser().token;        //obtain the token from the config to save it's state
+        self.path = self.prompt_get_path();     
+        self.serial();             
+        self.write_config();
+
     }
 }
 
@@ -163,35 +172,36 @@ pub fn run_program() {
     // create an instance of Config struct
     let mut config: Config = Config { token: String::new(), path: PathBuf::new() };
 
-        // true if the config file exists
-        if config.does_exist() { 
+        
+        if config.does_exist() { // true if the config file exists
 
             let conf = config.deser();  // create a new config struct with the deserialized data
             config.run_sb(&conf.path);          // call the run function to 
+            
             let nenv = Env {
                 token: conf.token,
             };
             nenv.set_env_token();
-            println!("env token: {}", nenv.token)
             
-        // false if the config file does not exist 
-        } else { 
+            
+         
+        } else { // false if the config file does not exist
             
             introduction();
             //creates a new config file, serializes the content of the Config struct
             // and writes the contents of the struct to the config
-            config.prompt_get_fields();        // obtain information to populate fields
-            config.create_new_config(); // create the config file
-            config.serialize();         // serialize the config struct
-            config.write_config();      // tie it all together and write to config file!
+            config.prompt_get_fields();         // obtain information to populate fields
+            config.create_new_config();         // create the config file
+            config.serial();                    // serialize the config struct
+            config.write_config();              // tie it all together and write to config file!
             println!("Skjaldr's Bot is starting sb.exe");
-            config.run_sb(&config.path);
+            config.run_sb(&config.path.to_path_buf());
             let nenv = Env {
-                token: config.token,
+                token: config.token.to_string(),
             };
             nenv.set_env_token();
-
-            println!("{}", nenv.token)
-            
+            config.run_sb(&config.path.to_path_buf());
+            //println!("{}", nenv.token)
+    
         }
 }

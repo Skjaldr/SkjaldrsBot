@@ -96,10 +96,7 @@ pub async fn run() {
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);
     }
-
     println!("Am I running?");
-
-    
 }
 
 //main fn
