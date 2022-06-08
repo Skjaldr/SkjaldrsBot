@@ -12,17 +12,34 @@ const WM_CHAR: u32 = 0x0102;
 
 // Find the specified window
 pub unsafe fn get_window() -> HWND {
-
+    
         let sb = CString::new("Shadowbane").expect("CString::new failed");
         let sbptr = sb.as_ptr();
         let hwnd = FindWindowA(ptr::null(), sbptr as *mut u8);
         hwnd
 }
 
-// Getter for the player name that we need to summon/invite/buff
-// pub async fn get_player_name(player_name: &str) -> &str {
-//      player_name
-//  }
+//for our logic to work in renameing the window and passing the renamed window into
+//the commands in order for discord to execute to ONLY the renamed window without
+//renaming other windows, we need to separate the step s into 3 different functions.
+// We already have the get_window() function.  This takes in the window named "Shadowbane"
+// turns it into a pointer, and stores the FindWindowA into hwnd.  Then returns that hwnd.
+
+//What is needed next however, is the rename function.  We need to take in that window only, and rename it
+pub unsafe fn rename_window() -> HWND {
+	let sb_renamed = CString::new("Shadowbane_bot").expect("Failed to read CString");
+	let renamed_ptr = sb_renamed.as_ptr();
+    
+	let orig_window = get_window();
+	let renamed = SetWindowTextA(orig_window, renamed_ptr as *mut u8) as isize;
+	renamed
+}
+
+pub unsafe fn get_renamed() -> HWND {
+	let renamed: HWND = rename_window();
+	renamed
+    	
+}
 
 // This function takes in the window handle (HWND) and the players name (p_name)
 // We then send a command to the Shadowbane client to open the summon spell
