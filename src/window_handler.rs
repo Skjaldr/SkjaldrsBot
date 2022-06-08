@@ -50,7 +50,7 @@ pub async fn summon_player(p_name: &str) {
 
     unsafe {
         
-        let hwnd = get_window();
+        let hwnd = get_renamed();
 
         SendMessageA(hwnd, KEY_DOWN, 'B' as usize, 0);
         //thread::sleep(Duration::from_nanos(10));
@@ -74,7 +74,7 @@ pub async fn summon_player(p_name: &str) {
 pub async fn guild_inv(player_name: &str) {
 
     unsafe {
-        let hwnd = get_window();
+        let hwnd = get_renamed();
         println!("I am calling the guild invite function!");
         SendMessageA(hwnd, KEY_DOWN, 'L' as usize, 0);
         thread::sleep(Duration::from_nanos(100));
