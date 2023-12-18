@@ -18,7 +18,7 @@ impl EventHandler for Handler {
     //ready message displays in terminal that bot is online and active, the lets users in chat know bot is online and ready to accept commands.
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
-        let channel_id = ChannelId(975528693575327777);
+        let channel_id = ChannelId("Enter discord token here");
         channel_id.say(&ctx.http, "Summon bot is now online!  /sum for summons, /inv for guild tags").await.unwrap();
     }
 }
